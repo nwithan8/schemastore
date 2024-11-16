@@ -14,6 +14,9 @@
         "description": {
           "type": "string"
         },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel"
+        },
         "envs": {
           "$ref": "#/definitions/EnvModel"
         }
@@ -43,7 +46,7 @@
       "type": "object"
     },
     "BitriseDataModel": {
-      "oneOf": [
+      "anyOf": [
         { "required": ["format_version"] },
         { "required": ["includes"] }
       ],
@@ -259,6 +262,12 @@
         "description": {
           "type": "string"
         },
+        "triggers": {
+          "$ref": "#/definitions/TriggersModel"
+        },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel"
+        },
         "stages": {
           "items": {
             "patternProperties": {
@@ -269,6 +278,46 @@
             "type": "object"
           },
           "type": "array"
+        },
+        "workflows": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/GraphPipelineWorkflowModel"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GraphPipelineWorkflowModel": {
+      "properties": {
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "abort_on_fail": {
+          "type": "boolean"
+        },
+        "should_always_run": {
+          "type": "string",
+          "enum": ["off", "workflow"]
+        },
+        "run_if": {
+          "$ref": "#/definitions/GraphPipelineWorkflowRunIfModel"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GraphPipelineWorkflowRunIfModel": {
+      "required": ["expression"],
+      "properties": {
+        "expression": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
@@ -305,6 +354,12 @@
       },
       "additionalProperties": false,
       "type": "object"
+    },
+    "StatusReportNameModel": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9,./():\\-_ <>\\[\\]\\|]*$"
     },
     "StepModel": {
       "properties": {
@@ -396,6 +451,123 @@
         },
         "outputs": {
           "$ref": "#/definitions/EnvModel"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TriggersModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "push": {
+          "items": {
+            "$ref": "#/definitions/PushTriggerModel"
+          },
+          "type": "array"
+        },
+        "pull_request": {
+          "items": {
+            "$ref": "#/definitions/PullrequestTriggerModel"
+          },
+          "type": "array"
+        },
+        "tag": {
+          "items": {
+            "$ref": "#/definitions/TagTriggerModel"
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PushTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "commit_message": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "changed_files": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PullrequestTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "draft_enabled": {
+          "type": "boolean"
+        },
+        "source_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "target_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "label": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "comment": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "commit_message": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        },
+        "changed_files": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TagTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "name": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemModelRegexCondition" },
+            { "type": "string" }
+          ]
         }
       },
       "additionalProperties": false,
@@ -560,6 +732,12 @@
         },
         "description": {
           "type": "string"
+        },
+        "triggers": {
+          "$ref": "#/definitions/TriggersModel"
+        },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel"
         },
         "before_run": {
           "items": {
